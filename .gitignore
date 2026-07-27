@@ -1,0 +1,27 @@
+# Python Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Checkpoints & Dataset caches (Large binary files)
+checkpoints/
+checkpoints_mini/
+dataset/*.pt
+dataset/*.txt
+!dataset/input.txt
+!dataset/modern_english.txt
+
+# IDE / OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

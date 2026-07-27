@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aria Scratch LLM Studio & Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-group">
+                <div class="logo-icon">🧠</div>
+                <div>
+                    <h1>Aria Scratch LLM Studio</h1>
+                    <p class="subtitle">Decoder-Only Transformer Architecture Built from First Principles</p>
+                </div>
+            </div>
+            <div class="model-badge-group" id="model-badges">
+                <span class="badge badge-purple" id="badge-params">Loading Params...</span>
+                <span class="badge badge-blue" id="badge-layers">Layers: -</span>
+                <span class="badge badge-cyan" id="badge-heads">Heads: -</span>
+                <span class="badge badge-green" id="badge-norm">RMSNorm</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="tab-generation">⚡ Interactive Generation</button>
+            <button class="tab-btn" data-tab="tab-attention">🔥 Multi-Head Self-Attention</button>
+            <button class="tab-btn" data-tab="tab-tokenizer">🔤 Tokenizer & Embeddings</button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- TAB 1: Generation Playground -->
+            <section id="tab-generation" class="tab-content active">
+                <div class="grid-2col">
+                    <!-- Controls Column -->
+                    <div class="card card-controls">
+                        <h3>Inference Controls</h3>
+                        <div class="form-group">
+                            <label for="prompt-input">Input Prompt:</label>
+                            <textarea id="prompt-input" rows="4" placeholder="Enter prompt text...">The doctor walked into the room and said,</textarea>
+                        </div>
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="temp-slider">Temperature:</label>
+                                <span class="val-display" id="temp-val">0.8</span>
+                            </div>
+                            <input type="range" id="temp-slider" min="0.1" max="2.0" step="0.1" value="0.8">
+                            <span class="help-text">Higher = more creative/random, Lower = more deterministic</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="topk-slider">Top-K Filter:</label>
+                                <span class="val-display" id="topk-val">10</span>
+                            </div>
+                            <input type="range" id="topk-slider" min="1" max="50" step="1" value="10">
+                            <span class="help-text">Restricts sample candidates to top K highest probability tokens</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="tokens-slider">Max New Tokens:</label>
+                                <span class="val-display" id="tokens-val">60</span>
+                            </div>
+                            <input type="range" id="tokens-slider" min="10" max="150" step="10" value="60">
+                        </div>
+                        <button id="generate-btn" class="btn btn-primary">Generate Tokens 🚀</button>
+                    </div>
+
+                    <!-- Output & Probability Inspector -->
+                    <div class="card card-output">
+                        <h3>Generated Output</h3>
+                        <div class="output-box" id="output-box">
+                            <span class="prompt-text">First Citizen:
+Before we proceed any further, hear me speak.</span><span class="gen-text" id="gen-text"></span>
+                        </div>
+                        
+                        <h4 style="margin-top: 20px;">Step-by-Step Probability Inspector</h4>
+                        <p class="help-text">Inspect next-token probability distribution at each auto-regressive step:</p>
+                        <div class="step-selector-row" id="step-selector"></div>
+                        <div class="candidate-bars" id="candidate-bars">
+                            <p class="text-muted">Click 'Generate Tokens' to inspect probability breakdowns per step.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Self-Attention Heatmap -->
+            <section id="tab-attention" class="tab-content">
+                <div class="card">
+                    <div class="attention-header">
+                        <div>
+                            <h3>Causal Multi-Head Attention Map</h3>
+                            <p class="help-text">Visualizing Scaled Dot-Product Attention: Softmax((Q · Kᵀ) / √d_k)</p>
+                        </div>
+                        <div class="selector-group">
+                            <label>Layer: <select id="layer-select"></select></label>
+                            <label>Head: <select id="head-select"></select></label>
+                        </div>
+                    </div>
+                    
+                    <div class="attention-prompt-row">
+                        <input type="text" id="attn-prompt" value="ROMEO: Shall I hear more, or shall I speak at this?" placeholder="Enter prompt to analyze attention weights...">
+                        <button id="update-attn-btn" class="btn btn-secondary">Analyze Attention 🔍</button>
+                    </div>
+
+                    <div class="heatmap-container">
+                        <div id="heatmap-grid" class="heatmap-grid"></div>
+                        <div class="heatmap-legend">
+                            <span>0.0 (No Attention)</span>
+                            <div class="gradient-bar"></div>
+                            <span>1.0 (Strong Attention)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: Tokenizer Inspector -->
+            <section id="tab-tokenizer" class="tab-content">
+                <div class="card">
+                    <h3>Tokenizer & Integer Encoding Inspector</h3>
+                    <p class="help-text">LLMs do not process text directly—they map characters or subwords into discrete integer Token IDs.</p>
+                    
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="tok-input">Text to Tokenize:</label>
+                        <input type="text" id="tok-input" value="To be, or not to be, that is the question.">
+                    </div>
+
+                    <div class="tokens-visual-box" id="tokens-chips"></div>
+
+                    <div class="stats-row" style="margin-top: 20px;">
+                        <div class="stat-card">
+                            <span class="stat-val" id="tok-count">0</span>
+                            <span class="stat-lbl">Token Count</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-val" id="vocab-count">0</span>
+                            <span class="stat-lbl">Vocab Size</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
